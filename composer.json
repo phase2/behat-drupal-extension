@@ -1,0 +1,19 @@
+{
+    "name": "phase2/drupal-extension",
+    "authors": [
+        {
+            "name": "Roger López",
+            "email": "rlopez@phase2technology.com"
+        }
+    ],
+
+    "require": {
+        "php": ">=5.3.2",
+        "behat/behat": ">=2.4.0,<2.4.x-dev"
+    },
+
+    "autoload": {
+        "psr-0": { "Phase2\\Behat\\DrupalExtension": "src/" }
+    }
+}
+

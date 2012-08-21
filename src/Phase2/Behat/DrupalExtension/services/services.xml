@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <parameters>
+        <parameter key="behat.drupal.drupal.class">Phase2\Behat\DrupalExtension\Drupal</parameter>
+        <parameter key="behat.drupal.context.initializer.class">Phase2\Behat\DrupalExtension\Context\Initializer\DrupalAwareInitializer</parameter>
+        <parameter key="behat.drupal.drupal_root"></parameter>
+        <parameter key="behat.drupal.base_url"></parameter>
+    </parameters>
+    <services>
+
+      <service id="behat.drupal.drupal" class="%behat.drupal.drupal.class%">
+        <argument>%behat.drupal.drupal_root%</argument>
+        <argument>%behat.drupal.base_url%</argument>
+      </service>
+
+      <service id="behat.drupal.context.initializer" class="%behat.drupal.context.initializer.class%">
+        <argument type="service" id="behat.drupal.drupal" />
+        <tag name="behat.context.initializer" />
+      </service>
+
+    </services>
+</container>
