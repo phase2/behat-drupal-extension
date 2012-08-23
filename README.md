@@ -29,7 +29,7 @@ This extension requires:
          ...
          {
            "type": "vcs",
-           "url": "https://github.com/phase2/DrupalExtension"
+           "url": "https://github.com/phase2/behat-drupal-extension"
          }
        ]
    }
