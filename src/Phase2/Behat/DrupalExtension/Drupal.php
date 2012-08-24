@@ -125,8 +125,9 @@ class Drupal {
   public function cron() {
     $cwd = getcwd();
     chdir(DRUPAL_ROOT);
-    drupal_cron_run();
+    $return = @drupal_cron_run();
     chdir($cwd);
+    return $return;
   }
 }
 

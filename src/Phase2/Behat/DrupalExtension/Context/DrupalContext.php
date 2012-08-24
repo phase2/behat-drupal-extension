@@ -5,6 +5,7 @@ namespace Phase2\Behat\DrupalExtension\Context;
 use Phase2\Behat\DrupalExtension\Drupal;
 
 use Behat\Behat\Context\BehatContext;
+use Behat\Gherkin\Node\TableNode;
 
 /**
  * Raw Drupal context for Behat BDD tool.
@@ -164,4 +165,115 @@ class DrupalContext extends BehatContext implements DrupalAwareInterface
       $this->getDrupal()->cron();
     }
 
+    /**
+     * How many items are need to be indexed?
+     */
+    protected function searchIndexRemaining() {
+      $remaining = 0;
+      $total = 0;
+      foreach (variable_get('search_active_modules', array('node', 'user')) as $module) {
+        if ($status = module_invoke($module, 'search_status')) {
+          $remaining += $status['remaining'];
+          $total += $status['total'];
+        }
+      }
+
+      return $remaining;
+    }
+
+    /**
+     * @Given /^the search index is updated$/
+     */
+    public function searchIndexIsUpdated($max_passes = 3) {
+      for ($i = 0; $i < $max_passes, $this->searchIndexRemaining() > 0; $i++) {
+        $this->getDrupal()->cron();
+      }
+
+      $remaining = $this->searchIndexRemaining();
+      if ($remaining > 0) {
+        throw new \RuntimeException('Search index queue has %d remaining items after %d passes.', $remaining, $max_passes);
+      }
+    }
+
+    /**
+     * Create a random string for use as titles, user names, etc.
+     */
+    protected function randomName($length = 8) {
+      return user_password($length);
+    }
+
+    /**
+     * @Transform /^table:node setting,value$/
+     */
+    public function castNodeSettingsTableToArray(TableNode $table) {
+      $settings = $table->getRowsHash();
+      unset($settings['node setting']);
+      return $settings;
+    }
+
+    /**
+     * @Given /^there is a node with the following settings$/
+     */
+    public function createNode(array $settings) {
+      // Populate defaults array.
+      $settings += array(
+        'body' => array(LANGUAGE_NONE => array(array())),
+        'title' => $this->randomName(8),
+        'comment' => 2,
+        'changed' => REQUEST_TIME,
+        'moderate' => 0,
+        'promote' => 0,
+        'revision' => 1,
+        'log' => '',
+        'status' => 1,
+        'sticky' => 0,
+        'type' => 'page',
+        'revisions' => NULL,
+        'language' => LANGUAGE_NONE,
+      );
+
+      // Use the original node's created time for existing nodes.
+      if (isset($settings['created']) && !isset($settings['date'])) {
+        $settings['date'] = format_date($settings['created'], 'custom', 'Y-m-d H:i:s O');
+      }
+
+      // If the node's user uid is not specified manually, use the currently
+      // logged in user if available, or else the user running the test.
+      if (!isset($settings['uid'])) {
+        if ($this->loggedInUser) {
+          $settings['uid'] = $this->loggedInUser->uid;
+        }
+        else {
+          global $user;
+          $settings['uid'] = $user->uid;
+        }
+      }
+
+      // Merge body field value and format separately.
+      $body = array(
+        'value' => $this->randomName(32),
+        'format' => filter_default_format(),
+      );
+      if (!isset($settings['body'][$settings['language']])) {
+        $settings['body'][$settings['language']] = array(0 => $body);
+      }
+      else {
+        $settings['body'][$settings['language']][0] += $body;
+      }
+
+      $node = (object) $settings;
+      node_save($node);
+
+      if (!$node->nid) {
+        throw new \RuntimeException('Unable to create node.');
+      }
+
+      // Small hack to link revisions to our test user.
+      db_update('node_revision')
+          ->fields(array('uid' => $node->uid))
+          ->condition('vid', $node->vid)
+          ->execute();
+
+      return $node;
+    }
 }
