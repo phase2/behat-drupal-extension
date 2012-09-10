@@ -72,7 +72,14 @@ class DrupalMinkContext extends DrupalContext
 
       $this->visit('/user');
 
-      $element = $this->getSession()->getPage()->find('css', '#user-login');
+      try {
+        $element = $this->assertSession()->elementExists('css', '#user-login');
+      }
+      catch (\Exception $e) {
+        $this->showLastResponse();
+        throw $e;
+      }
+
       $element->fillField('edit-name', $account->name);
       $element->fillField('edit-pass', $account->pass_raw);
       $submit = $element->findButton('Log in');

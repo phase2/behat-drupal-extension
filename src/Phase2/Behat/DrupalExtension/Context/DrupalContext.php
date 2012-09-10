@@ -21,6 +21,11 @@ class DrupalContext extends BehatContext implements DrupalAwareInterface
     protected $users = array();
 
     /**
+     * This array contains all of the testing modules installed by this context.
+     */
+    protected $modules = array();
+
+    /**
      * Sets Drupal instance.
      *
      * @param string $drupal
@@ -145,6 +150,7 @@ class DrupalContext extends BehatContext implements DrupalAwareInterface
      * @AfterScenario
      */
     public function removeTestUsers($event) {
+      return;
       // Remove any users that were created.
       if (!empty($this->users)) {
         foreach ($this->users as $account) {
@@ -276,4 +282,50 @@ class DrupalContext extends BehatContext implements DrupalAwareInterface
 
       return $node;
     }
+
+    /**
+     * @Given /^the "([^"]*)" module is installed$/
+     */
+    public function assertModuleExists($module, $message = NULL, $install = TRUE ) {
+      if (module_exists($module)) {
+        return TRUE;
+      }
+
+      if ($install && module_enable(array($module))) {
+        $this->modules[] = $module;
+        return TRUE;
+      }
+
+      if (empty($message)) {
+        $message = sprintf('Module "%s" is not installed.', $module);
+      }
+      throw new \RuntimeException($message);
+    }
+
+    /**
+     * @AfterScenario
+     */
+    public function afterScenarioRemoveModules($event) {
+      module_disable($this->modules);
+    }
+
+    /**
+     * @BeforeScenario
+     * Even with DRUPAL_ROOT, there are still parts of Drupal that use relative
+     * paths assuming that DRUPAL_ROOT is the current working directory.
+     */
+    public function beforeScenarioFixDrupalRoot($event) {
+      $this->old_cwd = getcwd();
+      chdir(DRUPAL_ROOT);
+    }
+
+    /**
+     * @AfterScenario
+     * Even with DRUPAL_ROOT, there are still parts of Drupal that use relative
+     * paths assuming that DRUPAL_ROOT is the current working directory.
+     */
+    public function afterScenarioFixDrupalRoot($event) {
+      chdir($this->old_cwd);
+    }
+
 }
