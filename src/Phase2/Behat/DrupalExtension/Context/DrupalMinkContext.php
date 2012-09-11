@@ -76,7 +76,10 @@ class DrupalMinkContext extends DrupalContext
         $element = $this->assertSession()->elementExists('css', '#user-login');
       }
       catch (\Exception $e) {
-        $this->showLastResponse();
+        if ($this->getMinkParameter('show_cmd')) {
+          $this->showLastResponse();
+        }
+
         throw $e;
       }
 
