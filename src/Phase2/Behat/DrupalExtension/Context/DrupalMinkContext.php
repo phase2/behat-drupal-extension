@@ -102,4 +102,11 @@ class DrupalMinkContext extends DrupalContext
       $this->loggedInUser = $account;
     }
 
+    /**
+     * @AfterScenario
+     */
+    public function teardown() {
+      // Logout so next feature starts as logged out.
+      $this->logout();
+    }
 }

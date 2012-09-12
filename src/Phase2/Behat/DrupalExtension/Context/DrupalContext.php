@@ -2,8 +2,6 @@
 
 namespace Phase2\Behat\DrupalExtension\Context;
 
-use Phase2\Behat\DrupalExtension\Drupal;
-
 use Behat\Behat\Context\BehatContext;
 use Behat\Gherkin\Node\TableNode;
 
@@ -11,10 +9,8 @@ use Behat\Gherkin\Node\TableNode;
  * Raw Drupal context for Behat BDD tool.
  * Provides raw Drupal integration (without step definitions) and web assertions.
  */
-class DrupalContext extends BehatContext implements DrupalAwareInterface
+class DrupalContext extends BehatContext
 {
-    private $drupal;
-
     /**
      * This array contains all of the user accounts created by this context.
      */
@@ -24,26 +20,6 @@ class DrupalContext extends BehatContext implements DrupalAwareInterface
      * This array contains all of the testing modules installed by this context.
      */
     protected $modules = array();
-
-    /**
-     * Sets Drupal instance.
-     *
-     * @param string $drupal
-     */
-    public function setDrupal(Drupal $drupal)
-    {
-        $this->drupal = $drupal;
-    }
-
-    /**
-     * Returns Drupal instance.
-     *
-     * @return string
-     */
-    public function getDrupal()
-    {
-        return $this->drupal;
-    }
 
     /**
      * Create a user with a given role.
@@ -307,25 +283,6 @@ class DrupalContext extends BehatContext implements DrupalAwareInterface
      */
     public function afterScenarioRemoveModules($event) {
       module_disable($this->modules);
-    }
-
-    /**
-     * @BeforeScenario
-     * Even with DRUPAL_ROOT, there are still parts of Drupal that use relative
-     * paths assuming that DRUPAL_ROOT is the current working directory.
-     */
-    public function beforeScenarioFixDrupalRoot($event) {
-      $this->old_cwd = getcwd();
-      chdir(DRUPAL_ROOT);
-    }
-
-    /**
-     * @AfterScenario
-     * Even with DRUPAL_ROOT, there are still parts of Drupal that use relative
-     * paths assuming that DRUPAL_ROOT is the current working directory.
-     */
-    public function afterScenarioFixDrupalRoot($event) {
-      chdir($this->old_cwd);
     }
 
 }

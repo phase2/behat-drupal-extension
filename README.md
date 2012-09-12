@@ -3,8 +3,6 @@ DrupalExtension
 
 This extension provides Behat integration with Drupal CMS projects.  It provides:
 
-* DrupalAwareInterface, which provides a Drupal service for your contexts.  This
-  Drupal service can bootstrap and refresh Drupal between scenarios.
 * DrupalMinkContext, which provides some useful step definitions for common
   Drupal functions, such as creating users and logging in.
 
@@ -55,19 +53,20 @@ Usage
 
 After installing extension, there are 2 usage options available for you:
 
-1. Implementing `Phase2\Behat\DrupalExtension\Context\DrupalAwareInterface` with your
-   context or its subcontexts. This will give you the flexibility to inherit
-   from any Context object, but also get an initialized Drupal service set in
-   your context.
-2. Extend `Phase2\Behat\DrupalExtension\Context\DrupalMinkContext` with your context or
-   subcontext.  This context is an implementation of the `DrupalAwareInterface`
-   and also and extension of `MinkContext`.  You will get all of the Mink step
-   definitions, all of the Drupal step definitions, and access to an initialized
-   Drupal service.
+1. Set the context class in the configuration file to use DrupalMinkContext.
 
-Both of these methods will implement the `setDrupal(Drupal $drupal)` method. This
-method would be automatically called immediately after each context creation
-before each scenario, initialized with the parameters set in your `behat.yml` file.
+```yml
+   # behat.yml
+   default:
+     context:
+       class: Phase2\Behat\DrupalExtension\Context\DrupalMinkContext
+```
+
+   This will give you access to all of the pre-defined Drupal and Mink steps
+   without needing to create a FeatureContext of your own.
+
+2. Extend `Phase2\Behat\DrupalExtension\Context\DrupalMinkContext` with your context
+   or subcontext if you need additional step definitions or hooks.
 
 Configuration
 ---
@@ -78,3 +77,5 @@ ability to configure how Drupal is used.
 * `drupal_root` - specifies the path to your Drupal document root.
 * `base_url` - specify the URL to be used when bootstrapping Drupal.  If using
   MinkExtension, this should match the base_url in the MinkExtension settings.
+* `module` - specify the name of an enabled Drupal module to run the feature
+  suite bundled with the module.

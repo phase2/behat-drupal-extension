@@ -28,8 +28,20 @@ class Extension extends BaseExtension {
     if (isset($config['base_url'])) {
       $container->setParameter('behat.drupal.base_url', $config['base_url']);
     }
-
-    $container->get('behat.drupal.drupal')->bootstrap();
+    if (isset($config['module'])) {
+      $container->setParameter('behat.drupal.module', $config['module']);
+    }
   }
 
+  /**
+   * Returns compiler passes used by this extension.
+   *
+   * @return array
+   */
+  public function getCompilerPasses()
+  {
+      return array(
+        new Compiler\DrupalBootstrapPass(),
+      );
+  }
 }
