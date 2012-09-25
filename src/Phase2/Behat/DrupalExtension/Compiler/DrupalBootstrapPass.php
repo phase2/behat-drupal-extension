@@ -6,10 +6,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder,
     Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 
 /**
- * Kernel initialization pass.
- * Loads kernel file and initializes kernel.
- *
- * @author Konstantin Kudryashov <ever.zet@gmail.com>
+ * Drupal Bootstrap initialization pass.
  */
 class DrupalBootstrapPass implements CompilerPassInterface
 {
@@ -24,25 +21,8 @@ class DrupalBootstrapPass implements CompilerPassInterface
           return;
         }
 
-        // drupal_root can be absolute or relative to behat.paths.base
-        $drupal_root = $container->getParameter('behat.drupal.drupal_root');
-        if (strpos($drupal_root, DIRECTORY_SEPARATOR) !== 0) {
-          $base_path = $container->getParameter('behat.paths.base');
-          $drupal_root = realpath($base_path . DIRECTORY_SEPARATOR . $drupal_root);
-        }
-
-        // Even after setting DRUPAL_ROOT, we still need to chdir() because of
-        // an issue with drupal_system_listing() that doesn't use the DRUPAL_ROOT
-        // when searching for module files.
-        define('DRUPAL_ROOT', $drupal_root);
-        chdir(DRUPAL_ROOT);
-
-        // bootstrap Drupal
-        require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
-        drupal_override_server_variables(array(
-          'url' => $container->getParameter('behat.drupal.base_url'),
-        ));
-        drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
+        // Do the bootstrap.
+        $this->bootstrap($container->getParameter('behat.drupal.drupal_root'), $container->getParameter('behat.drupal.base_url'));
 
         // if a module name specified - direct behat.paths.features to it
         if ($module = $container->getParameter('behat.drupal.module')) {
@@ -82,4 +62,29 @@ class DrupalBootstrapPass implements CompilerPassInterface
             );
         }
     }
+
+    /**
+     * Bootstrap Drupal.
+     */
+    protected function bootstrap($drupal_root, $base_url) {
+        // Only bootstrap Drupal once.
+        if (!defined('DRUPAL_ROOT')) {
+            define('DRUPAL_ROOT', $drupal_root);
+
+            // chdir to DRUPAL_ROOT to get around Drupal issues.
+            $old_pwd = getcwd();
+            chdir(DRUPAL_ROOT);
+
+            // bootstrap Drupal
+            require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
+            drupal_override_server_variables(array(
+              'url' => $base_url,
+            ));
+            drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
+
+            // Go back to the original directory.
+            chdir($old_pwd);
+        }
+    }
+
 }

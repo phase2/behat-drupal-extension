@@ -23,6 +23,11 @@ class Extension extends BaseExtension {
     $loader->load('services.xml');
 
     if (isset($config['drupal_root'])) {
+      // drupal_root can be absolute or relative to behat.paths.base
+      if (strpos($config['drupal_root'], DIRECTORY_SEPARATOR) !== 0) {
+        $base_path = $container->getParameter('behat.paths.base');
+        $config['drupal_root'] = realpath($base_path . DIRECTORY_SEPARATOR . $config['drupal_root']);
+      }
       $container->setParameter('behat.drupal.drupal_root', $config['drupal_root']);
     }
     if (isset($config['base_url'])) {

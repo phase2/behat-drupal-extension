@@ -6,5 +6,12 @@
         <parameter key="behat.drupal.drupal_root"></parameter>
         <parameter key="behat.drupal.base_url"></parameter>
         <parameter key="behat.drupal.module"></parameter>
+        <parameter key="behat.drupal.listener.drupal_root.class">Phase2\Behat\DrupalExtension\Listener\DrupalRootListener</parameter>
     </parameters>
+
+    <services>
+        <service id="behat.drupal.listener.drupal_root" class="%behat.drupal.listener.drupal_root.class%">
+            <tag name="behat.event_subscriber" priority="0" />
+        </service>
+    </services>
 </container>
