@@ -21,7 +21,7 @@ This extension requires:
    {
        "require": {
            ...
-           "phase2/drupal-extension": "*"
+           "phase2/drupal-extension": "dev-master"
        },
        "repositories": [
          ...
