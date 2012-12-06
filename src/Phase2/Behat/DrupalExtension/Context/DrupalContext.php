@@ -40,7 +40,7 @@ class DrupalContext extends BehatContext
 
     /**
      * @Given /^There is a user named "([^"]*)" with the password "([^"]*)"$/
-     * @Transform /^"([^"]*)" with the password "([^"]*)$"/
+     * @Transform /^"([^"]*)" with the password "([^"]*)"$/
      */
     public function createUserWithNameAndPassword($username, $password) {
       $account = user_load_by_name($username);
